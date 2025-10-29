@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2025-10-29
+
+### Fixed
+- TypeScript types: Added 'star' shape to compiled type definitions
+- ESLint configuration: Removed project reference and added ignorePatterns to exclude example folder
+- ESLint warnings: Fixed trailing commas in function parameters
+- Inline style warning: Moved static star styles to StyleSheet
+
 ## [0.1.2] - 2025-01-XX
 
 ### Added

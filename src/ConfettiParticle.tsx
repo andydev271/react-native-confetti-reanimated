@@ -162,12 +162,11 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
         <Animated.Text
           style={[
             styles.particle,
+            styles.star,
             {
               fontSize,
               color: particle.color,
               textShadowColor: particle.color,
-              textShadowOffset: { width: 0, height: 0 },
-              textShadowRadius: 3,
             },
             animatedStyle,
           ]}>
@@ -215,5 +214,9 @@ const styles = StyleSheet.create({
   },
   circle: {
     borderRadius: 999,
+  },
+  star: {
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 3,
   },
 });
