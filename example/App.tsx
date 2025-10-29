@@ -11,13 +11,100 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConfettiCanvas, useConfetti, presets } from 'react-native-confetti-reanimated';
 import type { ConfettiConfig } from 'react-native-confetti-reanimated';
 
+// Array of random angles to choose from (like canvas-confetti)
+const RANDOM_ANGLES = [60, 75, 90, 105, 120];
+
 export default function App() {
   const { confettiRef, fire } = useConfetti();
   const [lastPreset, setLastPreset] = useState<string>('');
 
   const handlePreset = (name: string, config: ConfettiConfig) => {
     setLastPreset(name);
-    fire(config);
+    
+    // Handle random direction with CRAZY randomness (like canvas-confetti)
+    if (name === 'Random Direction') {
+      fire({
+        ...config,
+        particleCount: Math.floor(Math.random() * 50) + 50, // 50-100 particles
+        angle: Math.random() * 360, // Any direction!
+        spread: Math.random() * 70 + 60, // 60-130 spread
+        startVelocity: Math.random() * 35 + 25, // 25-60 velocity
+        origin: {
+          x: Math.random(),
+          y: Math.random() - 0.2, // Random position
+        },
+      });
+    }
+    // Handle Realistic with 5 simultaneous bursts (avoid flattened cone)
+    else if (name === 'Realistic') {
+      // Fire 5 bursts SIMULTANEOUSLY with different parameters
+      fire({ ...config, spread: 26, startVelocity: 55 });
+      fire({ ...config, spread: 60 });
+      fire({ ...config, spread: 100, decay: 0.91, scalar: 0.8 });
+      fire({ ...config, spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+      fire({ ...config, spread: 120, startVelocity: 45 });
+    }
+    // Handle Fireworks with RAPID overlapping bursts (like canvas-confetti)
+    else if (name === 'Fireworks') {
+      const duration = 15 * 1000; // 15 seconds of fireworks
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, particleCount: 50 };
+      
+      const fireworksLoop = () => {
+        const timeLeft = animationEnd - Date.now();
+        
+        if (timeLeft <= 0) {
+          return;
+        }
+        
+        const particleCount = 50 * (timeLeft / duration);
+        
+        // Fire BOTH sides simultaneously for massive overlap
+        fire({
+          ...defaults,
+          particleCount,
+          origin: { x: Math.random() * 0.1, y: Math.random() * 0.5 + 0.3 },
+        });
+        fire({
+          ...defaults,
+          particleCount,
+          origin: { x: Math.random() * 0.1 + 0.9, y: Math.random() * 0.5 + 0.3 },
+        });
+        
+        // MUCH faster interval for continuous overlapping effect!
+        setTimeout(fireworksLoop, 250);
+      };
+      
+      fireworksLoop(); // Start immediately
+    }
+    // Handle Stars with RAPID overlapping bursts (like canvas-confetti)
+    else if (name === 'Stars') {
+      const defaults: ConfettiConfig = {
+        spread: 360,
+        particleCount: 50,
+        startVelocity: 20,
+        decay: 0.95,
+        gravity: 0.5,
+        shapes: ['star'],
+        scalar: 1.5,
+        colors: ['#FFD700', '#FFA500', '#FFFF00'],
+      };
+      
+      // Fire multiple bursts immediately (overlapping)
+      fire(defaults);
+      fire({ ...defaults, particleCount: 25 });
+      fire({ ...defaults, particleCount: 25 });
+      
+      // Add a few more for dramatic effect
+      setTimeout(() => {
+        fire({ ...defaults, particleCount: 30 });
+        fire({ ...defaults, particleCount: 20 });
+      }, 50);
+    }
+    // Normal presets
+    else {
+      fire(config);
+    }
   };
 
   const handleCustom = (config: ConfettiConfig, name: string) => {
@@ -31,7 +118,7 @@ export default function App() {
       <View style={styles.header}>
         <Text style={styles.title}>🎉 Confetti Demo</Text>
         <Text style={styles.subtitle}>
-          Powered by Reanimated 3
+          Powered by Reanimated 4
         </Text>
         {lastPreset ? (
           <Text style={styles.lastPreset}>Last: {lastPreset}</Text>
@@ -40,18 +127,18 @@ export default function App() {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preset Effects</Text>
+          <Text style={styles.sectionTitle}>Canvas-Confetti Examples</Text>
           
           <TouchableOpacity
             style={[styles.button, styles.primaryButton]}
-            onPress={() => handlePreset('Celebration', presets.celebration)}>
-            <Text style={styles.buttonText}>🎊 Celebration</Text>
+            onPress={() => handlePreset('Basic Cannon', presets.basicCannon)}>
+            <Text style={styles.buttonText}>🎉 Basic Cannon</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.button, styles.primaryButton]}
-            onPress={() => handlePreset('Fireworks', presets.fireworks)}>
-            <Text style={styles.buttonText}>🎆 Fireworks</Text>
+            onPress={() => handlePreset('Random Direction', presets.randomDirection)}>
+            <Text style={styles.buttonText}>🎲 Random Direction</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -61,9 +148,9 @@ export default function App() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.button, styles.secondaryButton]}
-            onPress={() => handlePreset('Snow', presets.snow)}>
-            <Text style={styles.buttonText}>❄️ Snow</Text>
+            style={[styles.button, styles.primaryButton]}
+            onPress={() => handlePreset('Fireworks', presets.fireworks)}>
+            <Text style={styles.buttonText}>🎆 Fireworks</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -73,138 +160,12 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Directional</Text>
-          
-          <TouchableOpacity
-            style={[styles.button, styles.accentButton]}
-            onPress={() => handlePreset('Left Cannon', presets.leftCannon)}>
-            <Text style={styles.buttonText}>⬅️ Left Cannon</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.accentButton]}
-            onPress={() => handlePreset('Right Cannon', presets.rightCannon)}>
-            <Text style={styles.buttonText}>➡️ Right Cannon</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.accentButton]}
-            onPress={() => handlePreset('Bottom Cannon', presets.bottomCannon)}>
-            <Text style={styles.buttonText}>⬆️ Bottom Cannon</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Custom Effects</Text>
-          
-          <TouchableOpacity
-            style={[styles.button, styles.customButton]}
-            onPress={() =>
-              handleCustom(
-                {
-                  particleCount: 150,
-                  spread: 180,
-                  colors: ['#ff0000', '#00ff00', '#0000ff'],
-                  origin: { y: 0.4 },
-                },
-                'RGB Explosion'
-              )
-            }>
-            <Text style={styles.buttonText}>🌈 RGB Explosion</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.customButton]}
-            onPress={() =>
-              handleCustom(
-                {
-                  particleCount: 100,
-                  spread: 70,
-                  startVelocity: 60,
-                  gravity: 2,
-                  colors: ['#FFD700', '#FFA500'],
-                  shapes: ['circle'],
-                },
-                'Golden Rain'
-              )
-            }>
-            <Text style={styles.buttonText}>💰 Golden Rain</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.customButton]}
-            onPress={() =>
-              handleCustom(
-                {
-                  particleCount: 200,
-                  spread: 360,
-                  startVelocity: 25,
-                  decay: 0.92,
-                  gravity: 0.8,
-                  drift: 2,
-                  shapes: ['square', 'circle', 'triangle'],
-                  colors: ['#ff69b4', '#ff1493', '#c71585'],
-                },
-                'Pink Party'
-              )
-            }>
-            <Text style={styles.buttonText}>💕 Pink Party</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.customButton]}
-            onPress={() => {
-              handleCustom(
-                {
-                  particleCount: 50,
-                  angle: 60,
-                  spread: 55,
-                  origin: { x: 0, y: 0.6 },
-                  colors: ['#26ccff', '#a25afd', '#ff5e7e'],
-                },
-                'Side Burst (Left)'
-              );
-              setTimeout(() => {
-                fire({
-                  particleCount: 50,
-                  angle: 120,
-                  spread: 55,
-                  origin: { x: 1, y: 0.6 },
-                  colors: ['#26ccff', '#a25afd', '#ff5e7e'],
-                });
-              }, 250);
-            }}>
-            <Text style={styles.buttonText}>🎯 Double Side Burst</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, styles.warningButton]}
-            onPress={() => {
-              const duration = 3000;
-              const animationEnd = Date.now() + duration;
-              const interval = setInterval(() => {
-                if (Date.now() > animationEnd) {
-                  clearInterval(interval);
-                  return;
-                }
-                fire({
-                  particleCount: 20,
-                  angle: 60 + Math.random() * 60,
-                  spread: 55,
-                  origin: { x: Math.random(), y: Math.random() * 0.5 },
-                  colors: ['#bb0000', '#ffffff'],
-                });
-              }, 200);
-              setLastPreset('Continuous Burst');
-            }}>
-            <Text style={styles.buttonText}>💥 Continuous Burst (3s)</Text>
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            Built with react-native-confetti-reanimated
+            react-native-confetti-reanimated
+          </Text>
+          <Text style={styles.footerSubtext}>
+            Compatible with canvas-confetti
           </Text>
         </View>
       </ScrollView>
@@ -296,12 +257,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    paddingVertical: 20,
+    paddingVertical: 24,
     alignItems: 'center',
   },
   footerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#495057',
+  },
+  footerSubtext: {
     fontSize: 12,
     color: '#6c757d',
+    marginTop: 4,
   },
 });
 

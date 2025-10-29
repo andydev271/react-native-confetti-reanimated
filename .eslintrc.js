@@ -6,8 +6,8 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2022,
     sourceType: 'module',
-    project: './tsconfig.json',
   },
+  ignorePatterns: ['example/', 'lib/', 'node_modules/', '*.config.js'],
   rules: {
     'prettier/prettier': 0,
     'react-hooks/exhaustive-deps': 'warn',

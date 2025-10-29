@@ -5,20 +5,13 @@ A high-performance confetti component for React Native, powered by [Reanimated 4
 [![npm version](https://img.shields.io/npm/v/react-native-confetti-reanimated.svg)](https://www.npmjs.com/package/react-native-confetti-reanimated)
 [![license](https://img.shields.io/npm/l/react-native-confetti-reanimated.svg)](https://github.com/andydev271/react-native-confetti-reanimated/blob/main/LICENSE)
 
-## Preview
-
-<!-- Add your demo GIF here after generating it -->
-![Confetti Demo](./assets/demo.gif)
-
-> **Note**: To generate demo GIFs, run the example app and record the screen. See [example/README.md](./example/README.md) for instructions.
-
 ## Features
 
 - 🚀 **High Performance** - Built with Reanimated 4 for smooth 60fps animations on UI thread
 - 📱 **Expo Compatible** - Works seamlessly with Expo managed workflow
 - 🎨 **Fully Customizable** - Control colors, shapes, physics, and more
-- 🎭 **Multiple Shapes** - Supports squares, circles, and triangles
-- 🎯 **Preset Effects** - Ready-to-use effects like fireworks, snow, stars
+- 🎭 **Multiple Shapes** - Supports squares, circles, and stars
+- 🎯 **Preset Effects** - Ready-to-use effects like fireworks, stars, and realistic confetti
 - 🌈 **Canvas Confetti API** - Familiar API inspired by canvas-confetti
 - 📦 **TypeScript** - Full TypeScript support
 - 🔧 **Lightweight** - Minimal dependencies
@@ -26,29 +19,27 @@ A high-performance confetti component for React Native, powered by [Reanimated 4
 ## Installation
 
 ```bash
-npm install react-native-confetti-reanimated react-native-reanimated react-native-worklets
+npm install react-native-confetti-reanimated react-native-reanimated
 ```
 
 Or with Expo:
 
 ```bash
-npx expo install react-native-confetti-reanimated react-native-reanimated react-native-worklets
+npx expo install react-native-confetti-reanimated react-native-reanimated
 ```
 
 ### Setup
 
 Add the Babel plugin to your `babel.config.js`:
 
-**For Expo projects:**
+**For Expo projects (SDK 50+):**
 
 ```javascript
 module.exports = function (api) {
   api.cache(true);
   return {
     presets: ['babel-preset-expo'],
-    plugins: [
-      'react-native-worklets/plugin',
-    ],
+    // Reanimated plugin is automatically included in Expo SDK 50+
   };
 };
 ```
@@ -60,11 +51,12 @@ module.exports = {
   presets: ['module:metro-react-native-babel-preset'],
   plugins: [
     'react-native-worklets/plugin',
+    'react-native-reanimated/plugin',
   ],
 };
 ```
 
-> ⚠️ **Important**: `react-native-worklets/plugin` must be listed last. Restart your app after updating Babel config.
+> ⚠️ **Important**: For Expo, plugins are auto-included. For React Native CLI, add both plugins (worklets before reanimated). Restart your app after changes.
 
 ## Quick Start
 
@@ -92,16 +84,19 @@ export default function App() {
 ```tsx
 import { presets } from 'react-native-confetti-reanimated';
 
-// Celebration burst
-fire(presets.celebration);
+// Basic cannon burst
+fire(presets.basicCannon);
 
-// Fireworks effect
+// Random direction (different each time)
+fire(presets.randomDirection);
+
+// Realistic confetti (mixed bursts)
+fire(presets.realistic);
+
+// Fireworks effect (continuous from sides)
 fire(presets.fireworks);
 
-// Snow effect
-fire(presets.snow);
-
-// Stars
+// Stars burst
 fire(presets.stars);
 ```
 
@@ -184,7 +179,7 @@ interface ConfettiConfig {
   colors?: string[];           // Default: vibrant colors
   scalar?: number;             // Default: 1
   origin?: { x?: number; y?: number }; // Default: { x: 0.5, y: 0.5 }
-  shapes?: Array<'square' | 'circle' | 'triangle'>; // Default: ['square', 'circle']
+  shapes?: Array<'square' | 'circle' | 'star'>; // Default: ['square']
   tilt?: boolean;              // Default: true
   tiltAngleIncrement?: number; // Default: 10
 }
@@ -193,19 +188,24 @@ interface ConfettiConfig {
 ### Available Presets
 
 ```typescript
-presets.celebration    // 🎊 Basic celebration
-presets.fireworks      // 🎆 Explosive effect
-presets.realistic      // ✨ Realistic confetti
-presets.snow           // ❄️ Falling snow
-presets.stars          // ⭐ Twinkling stars
-presets.leftCannon     // ⬅️ Left side cannon
-presets.rightCannon    // ➡️ Right side cannon
-presets.bottomCannon   // ⬆️ Bottom cannon
+presets.basicCannon      // 🎊 Basic celebration burst
+presets.randomDirection  // 🎲 Random direction & amount
+presets.realistic        // ✨ Realistic confetti (mixed bursts)
+presets.fireworks        // 🎆 Continuous fireworks from sides
+presets.stars            // ⭐ Golden star burst
+presets.leftCannon       // ⬅️ Left side cannon
+presets.rightCannon      // ➡️ Right side cannon
+presets.bottomCannon     // ⬆️ Bottom cannon
 ```
 
 ## Example App
 
-Check out the `example` directory for a complete demo app with all features.
+Check out the `example` directory for a complete demo app with all features:
+- 🎊 Basic Cannon
+- 🎲 Random Direction  
+- ✨ Realistic Look
+- 🎆 Fireworks
+- ⭐ Stars
 
 ```bash
 cd example
@@ -219,16 +219,16 @@ Then use Expo Go to scan the QR code or press `i` for iOS / `a` for Android.
 
 - ✅ iOS
 - ✅ Android  
-- ✅ Expo (SDK 50+)
+- ✅ Expo (SDK 50+, tested with SDK 54)
 
 ## Requirements
 
-- React Native ≥ 0.74 (New Architecture/Fabric)
+- React ≥ 18.0.0 (tested with React 19)
+- React Native ≥ 0.74 (New Architecture/Fabric required)
 - React Native Reanimated ≥ 4.0.0
-- React Native Worklets ≥ 0.5.0
-- Expo SDK ≥ 50 (if using Expo)
+- Expo SDK ≥ 50 (tested with SDK 54)
 
-> **Note**: Reanimated 4 requires the React Native New Architecture (Fabric)
+> **Note**: Reanimated 4 requires React Native's New Architecture (Fabric). Expo SDK 50+ has this enabled by default.
 
 ## Troubleshooting
 

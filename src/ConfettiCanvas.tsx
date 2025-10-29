@@ -10,7 +10,7 @@ export interface ConfettiCanvasProps {
    * Style for the confetti container
    */
   containerStyle?: any;
-  
+
   /**
    * Z-index for the confetti container
    * @default 1000
@@ -24,10 +24,13 @@ export interface ConfettiCanvasProps {
   fullScreen?: boolean;
 }
 
+interface ParticleWithConfig extends ConfettiParticleType {
+  config: Required<ConfettiConfig>;
+}
+
 export const ConfettiCanvas = React.forwardRef<ConfettiMethods, ConfettiCanvasProps>(
   ({ containerStyle, zIndex = 1000, fullScreen = true }, ref) => {
-    const [particles, setParticles] = useState<ConfettiParticleType[]>([]);
-    const [activeCount, setActiveCount] = useState(0);
+    const [particles, setParticles] = useState<ParticleWithConfig[]>([]);
     const { width, height } = useWindowDimensions();
 
     const fire = useCallback(
@@ -43,21 +46,23 @@ export const ConfettiCanvas = React.forwardRef<ConfettiMethods, ConfettiCanvasPr
           };
 
           const newParticles = createConfettiParticles(mergedConfig, width, height);
-          setParticles(prev => [...prev, ...newParticles]);
-          setActiveCount(prev => prev + newParticles.length);
+          const particlesWithConfig = newParticles.map(p => ({
+            ...p,
+            config: mergedConfig,
+          }));
+          setParticles(prev => [...prev, ...particlesWithConfig]);
 
           // Resolve after the duration
           setTimeout(() => {
-            resolve(null);
-          }, mergedConfig.duration);
+          resolve(null);
+        }, mergedConfig.duration);
         });
       },
-      [width, height]
+      [width, height],
     );
 
     const reset = useCallback(() => {
       setParticles([]);
-      setActiveCount(0);
     }, []);
 
     useImperativeHandle(
@@ -67,17 +72,16 @@ export const ConfettiCanvas = React.forwardRef<ConfettiMethods, ConfettiCanvasPr
         confetti.reset = reset;
         return confetti;
       },
-      [fire, reset]
+      [fire, reset],
     );
 
     const handleParticleComplete = useCallback((particleId: string) => {
-      setActiveCount(prev => prev - 1);
       setParticles(prev => {
         // Clean up completed particles periodically
         if (prev.length > 100) {
           return prev.filter(p => p.id !== particleId).slice(-50);
         }
-        return prev;
+        return prev.filter(p => p.id !== particleId);
       });
     }, []);
 
@@ -94,13 +98,14 @@ export const ConfettiCanvas = React.forwardRef<ConfettiMethods, ConfettiCanvasPr
           <ConfettiParticle
             key={particle.id}
             particle={particle}
-            duration={DEFAULT_CONFIG.duration}
+            config={particle.config}
+            duration={particle.config.duration}
             onComplete={() => handleParticleComplete(particle.id)}
           />
         ))}
       </View>
     );
-  }
+  },
 );
 
 ConfettiCanvas.displayName = 'ConfettiCanvas';

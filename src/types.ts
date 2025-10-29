@@ -73,7 +73,7 @@ export interface ConfettiConfig {
    * Shapes for confetti
    * @default ['square', 'circle']
    */
-  shapes?: Array<'square' | 'circle' | 'triangle'>;
+  shapes?: Array<'square' | 'circle' | 'star'>;
 
   /**
    * Whether the confetti should be affected by tilt
@@ -109,10 +109,11 @@ export interface ConfettiConfig {
 export interface ConfettiParticle {
   id: string;
   color: string;
-  shape: 'square' | 'circle' | 'triangle';
+  shape: 'square' | 'circle' | 'star';
   x: number;
   y: number;
-  size: number;
+  width: number;
+  height: number;
   velocity: {
     x: number;
     y: number;

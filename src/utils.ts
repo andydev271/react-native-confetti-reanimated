@@ -1,13 +1,30 @@
 import type { ConfettiConfig, ConfettiParticle } from './types';
 
+// Canvas-confetti uses highly contrasting, distinct colors for realistic effect
+// Each color is maximally different from others for clear visibility
 export const DEFAULT_COLORS = [
-  '#26ccff',
-  '#a25afd',
-  '#ff5e7e',
-  '#88ff5a',
-  '#fcff42',
-  '#ffa62d',
-  '#ff36ff',
+  // Primary vibrant colors (maximally distinct)
+  '#26ccff', // Bright Cyan
+  '#a25afd', // Purple
+  '#ff5e7e', // Pink
+  '#88ff5a', // Lime Green
+  '#fcff42', // Yellow
+  '#ffa62d', // Orange
+  '#ff36ff', // Magenta
+  // Secondary distinct colors
+  '#1e90ff', // Dodger Blue
+  '#9400d3', // Dark Violet
+  '#ff1493', // Deep Pink
+  '#32cd32', // Lime
+  '#ffd700', // Gold
+  '#ff6347', // Tomato
+  '#00ffff', // Cyan
+  '#ff00ff', // Fuchsia
+  // Additional contrast colors
+  '#00ff00', // Pure Green
+  '#ff0000', // Pure Red
+  '#0000ff', // Pure Blue
+  '#ffff00', // Pure Yellow
 ];
 
 export const DEFAULT_CONFIG: Required<ConfettiConfig> = {
@@ -22,7 +39,7 @@ export const DEFAULT_CONFIG: Required<ConfettiConfig> = {
   colors: DEFAULT_COLORS,
   scalar: 1,
   origin: { x: 0.5, y: 0.5 },
-  shapes: ['square', 'circle'],
+  shapes: ['square'], // Rectangular strips are most realistic
   tilt: true,
   tiltAngleIncrement: 10,
   tickDuration: 200,
@@ -61,29 +78,38 @@ export const randomFromArray = <T>(arr: T[]): T => {
 export const createConfettiParticles = (
   config: Required<ConfettiConfig>,
   screenWidth: number,
-  screenHeight: number
+  screenHeight: number,
 ): ConfettiParticle[] => {
   const particles: ConfettiParticle[] = [];
   const angleInRadians = degreesToRadians(config.angle);
   const spreadInRadians = degreesToRadians(config.spread);
 
+  const timestamp = Date.now();
   for (let i = 0; i < config.particleCount; i++) {
-    const angle = angleInRadians + randomRange(-spreadInRadians / 2, spreadInRadians / 2);
-    const velocity = config.startVelocity * (0.5 + Math.random() * 0.5);
-    
+    // Add spread variation to the angle
+    const spreadVariation = randomRange(-spreadInRadians / 2, spreadInRadians / 2);
+    const particleAngle = angleInRadians + spreadVariation;
+    // Randomize velocity within range
+    const velocityMagnitude = config.startVelocity * (0.5 + Math.random() * 0.5);
+    // Create confetti particles - broader and shorter like canvas-confetti
+    const baseWidth = (6 + Math.random() * 4) * config.scalar; // 6-10px wide (BROADER)
+    const aspectRatio = 0.5 + Math.random() * 0.3; // 0.5-0.8 ratio (SHORTER than wide)
     const particle: ConfettiParticle = {
-      id: `confetti-${i}-${Date.now()}`,
+      id: `confetti-${timestamp}-${i}-${Math.random()}`,
       color: randomFromArray(config.colors),
       shape: randomFromArray(config.shapes),
       x: (config.origin.x ?? 0.5) * screenWidth,
       y: (config.origin.y ?? 0.5) * screenHeight,
-      size: (5 + Math.random() * 5) * config.scalar,
+      width: baseWidth,
+      height: baseWidth * aspectRatio, // Height is SMALLER than width
       velocity: {
-        x: Math.cos(angle) * velocity,
-        y: Math.sin(angle) * velocity,
+        // Canvas-confetti uses pixels per frame (60fps)
+        // Use velocity as-is for proper scaling to device
+        x: Math.cos(particleAngle) * velocityMagnitude,
+        y: -Math.sin(particleAngle) * velocityMagnitude, // Negative = upward initially
       },
       rotation: Math.random() * 360,
-      rotationVelocity: randomRange(-10, 10),
+      rotationVelocity: randomRange(-50, 50), // Very wide range for dramatic spinning
       tiltAngle: config.tilt ? Math.random() * config.tiltAngleIncrement : 0,
       opacity: 1,
     };
@@ -100,13 +126,12 @@ export const createConfettiParticles = (
 export const updateParticle = (
   particle: ConfettiParticle,
   config: Required<ConfettiConfig>,
-  deltaTime: number
+  deltaTime: number,
 ): ConfettiParticle => {
   const dt = deltaTime / 16; // Normalize to 60fps
 
   // Apply gravity
   const newVelocityY = particle.velocity.y - config.gravity * dt;
-  
   // Apply drift
   const newVelocityX = particle.velocity.x + config.drift * dt;
 
@@ -132,4 +157,3 @@ export const updateParticle = (
     opacity: newOpacity,
   };
 };
-

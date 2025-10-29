@@ -1,6 +1,6 @@
 {
   "name": "react-native-confetti-reanimated",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A high-performance confetti component for React Native using Reanimated 4, compatible with Expo",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",
@@ -42,23 +42,19 @@
   },
   "homepage": "https://github.com/andydev271/react-native-confetti-reanimated#readme",
   "peerDependencies": {
-    "react": "*",
-    "react-native": "*",
-    "react-native-reanimated": ">=4.0.0",
-    "react-native-worklets": ">=0.5.0"
+    "react": ">=18.0.0",
+    "react-native": ">=0.74.0",
+    "react-native-reanimated": ">=4.0.0"
   },
   "devDependencies": {
     "@react-native-community/eslint-config": "^3.2.0",
-    "@types/react": "~18.2.0",
-    "@types/react-native": "^0.72.0",
-    "eslint": "^8.51.0",
-    "prettier": "^3.0.3",
-    "react": "18.2.0",
-    "react-native": "0.74.0",
-    "react-native-builder-bob": "^0.30.0",
+    "@types/react": "~19.1.0",
+    "prettier": "^3.4.2",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-builder-bob": "^0.40.0",
     "react-native-reanimated": "^4.0.0",
-    "react-native-worklets": "^0.5.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.7.0"
   },
   "react-native-builder-bob": {
     "source": "src",
