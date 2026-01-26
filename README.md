@@ -108,7 +108,7 @@ fire({
   spread: 70,
   origin: { y: 0.6 },
   colors: ['#ff0000', '#00ff00', '#0000ff'],
-  shapes: ['square', 'circle', 'triangle'],
+  shapes: ['square', 'circle', 'star'],
   startVelocity: 45,
   gravity: 1,
   decay: 0.9,
@@ -126,19 +126,6 @@ fire(presets.rightCannon);
 
 // Bottom cannon (shoot upward)
 fire(presets.bottomCannon);
-```
-
-### Continuous Effect
-
-```tsx
-const startContinuous = () => {
-  const interval = setInterval(() => {
-    fire({ particleCount: 10 });
-  }, 200);
-
-  // Stop after 3 seconds
-  setTimeout(() => clearInterval(interval), 3000);
-};
 ```
 
 ## API Reference
