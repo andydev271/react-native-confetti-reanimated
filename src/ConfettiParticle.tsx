@@ -35,11 +35,17 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
   const tiltCos = useSharedValue(0);
   const random = useSharedValue(Math.random() + 2);
   const tick = useSharedValue(0);
-  const totalTicks = useSharedValue((duration / 1000) * 60); // 60fps
+  const totalTicks = useSharedValue(
+    Math.max(1, Math.round((config.ticks ?? config.tickDuration ?? (duration / 1000) * 60))),
+  );
 
   useEffect(() => {
     startTime.value = Date.now();
     tick.value = 0;
+    totalTicks.value = Math.max(
+      1,
+      Math.round((config.ticks ?? config.tickDuration ?? (duration / 1000) * 60)),
+    );
 
     // Cleanup callback
     const timer = setTimeout(() => {
@@ -56,7 +62,20 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
       cancelAnimation(rotation);
       cancelAnimation(opacity);
     };
-  }, [duration, onComplete, opacity, isComplete, startTime, translateX, translateY, rotation, tick]);
+  }, [
+    config.tickDuration,
+    config.ticks,
+    duration,
+    onComplete,
+    opacity,
+    isComplete,
+    startTime,
+    totalTicks,
+    translateX,
+    translateY,
+    rotation,
+    tick,
+  ]);
 
   // Real-time physics simulation using frame callback
   useFrameCallback(() => {
@@ -104,7 +123,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     tick.value += 1;
 
     // Canvas-confetti progressive fade: opacity decreases linearly over lifetime
-    const progress = tick.value / totalTicks.value;
+    const progress = Math.min(1, tick.value / totalTicks.value);
     opacity.value = 1 - progress;
   });
 

@@ -45,6 +45,27 @@ export const ConfettiCanvas = React.forwardRef<ConfettiMethods, ConfettiCanvasPr
             },
           };
 
+          const resolvedTicks =
+            config.ticks ??
+            config.tickDuration ??
+            mergedConfig.ticks ??
+            mergedConfig.tickDuration;
+
+          if (resolvedTicks !== undefined) {
+            mergedConfig.ticks = resolvedTicks;
+            mergedConfig.tickDuration = resolvedTicks;
+          }
+
+          if (config.duration === undefined && resolvedTicks !== undefined) {
+            mergedConfig.duration = Math.round((resolvedTicks / 60) * 1000);
+          } else if (config.ticks === undefined && config.tickDuration === undefined) {
+            mergedConfig.ticks = Math.max(
+              1,
+              Math.round((mergedConfig.duration / 1000) * 60),
+            );
+            mergedConfig.tickDuration = mergedConfig.ticks;
+          }
+
           const newParticles = createConfettiParticles(mergedConfig, width, height);
           const particlesWithConfig = newParticles.map(p => ({
             ...p,
@@ -54,8 +75,8 @@ export const ConfettiCanvas = React.forwardRef<ConfettiMethods, ConfettiCanvasPr
 
           // Resolve after the duration
           setTimeout(() => {
-          resolve(null);
-        }, mergedConfig.duration);
+            resolve(null);
+          }, mergedConfig.duration);
         });
       },
       [width, height],

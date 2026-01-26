@@ -43,6 +43,7 @@ export const DEFAULT_CONFIG: Required<ConfettiConfig> = {
   tilt: true,
   tiltAngleIncrement: 10,
   tickDuration: 200,
+  ticks: 200,
   disableForReducedMotion: false,
   usePerformanceMode: false,
 };

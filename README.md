@@ -176,6 +176,7 @@ interface ConfettiConfig {
   gravity?: number;            // Default: 1
   drift?: number;              // Default: 0
   duration?: number;           // Default: 3000 (ms)
+  ticks?: number;              // Default: 200 (frames @ 60fps)
   colors?: string[];           // Default: vibrant colors
   scalar?: number;             // Default: 1
   origin?: { x?: number; y?: number }; // Default: { x: 0.5, y: 0.5 }
@@ -184,6 +185,8 @@ interface ConfettiConfig {
   tiltAngleIncrement?: number; // Default: 10
 }
 ```
+
+> `ticks` (frames) overrides `duration` when provided (60fps assumed).
 
 ### Available Presets
 

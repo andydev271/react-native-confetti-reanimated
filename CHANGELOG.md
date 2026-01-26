@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.4] - 2026-01-23
+
+### Fixed
+- Respect `ticks`/`tickDuration` to control animation length and fade timing
+- Derive duration from ticks when provided for consistent fall/fade behavior
+
 ## [0.1.3] - 2025-10-29
 
 ### Fixed
@@ -84,3 +90,6 @@ All notable changes to this project will be documented in this file.
 
 [0.1.1]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.1
 [0.1.0]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.0
+[0.1.4]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.4
+[0.1.3]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.3
+[0.1.2]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.2

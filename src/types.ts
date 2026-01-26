@@ -94,6 +94,13 @@ export interface ConfettiConfig {
   tickDuration?: number;
 
   /**
+   * Total ticks (frames) for the confetti animation
+   * Overrides duration when provided (60fps assumed)
+   * @default 200
+   */
+  ticks?: number;
+
+  /**
    * Disable physics
    * @default false
    */
