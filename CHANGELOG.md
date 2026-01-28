@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6] - 2026-01-28
+
+### Fixed
+- **Frame-rate independence**: Fixed animation speed inconsistency between simulators and real devices
+- Physics calculations now use delta-time instead of frame-based updates
+- Optimized to use `frameInfo.timestamp` and `timeSincePreviousFrame` for better performance
+- Confetti animation speed is now consistent across all devices (30fps, 60fps, 120fps)
+- Improved handling of edge cases (first frame, background resume)
+
 ## [0.1.5] - 2026-01-28
 
 ### Fixed
@@ -96,6 +105,7 @@ All notable changes to this project will be documented in this file.
 - React Native Worklets ≥ 0.5.0
 - Expo SDK ≥ 50 (tested with SDK 54)
 
+[0.1.6]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.6
 [0.1.5]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.5
 [0.1.4]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.4
 [0.1.3]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.3
