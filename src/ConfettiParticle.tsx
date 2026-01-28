@@ -25,6 +25,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
   const velX = useSharedValue(particle.velocity.x);
   const velY = useSharedValue(particle.velocity.y);
   const startTime = useSharedValue(Date.now());
+  const lastFrameTime = useSharedValue(Date.now());
   const isComplete = useSharedValue(false);
 
   // Canvas-confetti realistic wobble and tilt variables
@@ -40,7 +41,9 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
   );
 
   useEffect(() => {
-    startTime.value = Date.now();
+    const now = Date.now();
+    startTime.value = now;
+    lastFrameTime.value = now;
     tick.value = 0;
     totalTicks.value = Math.max(
       1,
@@ -70,6 +73,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     opacity,
     isComplete,
     startTime,
+    lastFrameTime,
     totalTicks,
     translateX,
     translateY,
@@ -78,52 +82,77 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
   ]);
 
   // Real-time physics simulation using frame callback
-  useFrameCallback(() => {
+  // Frame-rate independent: uses deltaTime to ensure consistent speed across devices
+  useFrameCallback((frameInfo) => {
     'worklet';
 
     if (isComplete.value) {
       return;
     }
 
-    const elapsed = Date.now() - startTime.value;
+    // Use frameInfo.timestamp for better performance (runs on UI thread)
+    // Fallback to Date.now() if timestamp not available
+    const currentTime = frameInfo?.timestamp ?? Date.now();
+    const elapsed = currentTime - startTime.value;
     if (elapsed >= duration) {
       isComplete.value = true;
       return;
     }
 
-    // Update position based on current velocity
-    translateX.value += velX.value;
-    translateY.value += velY.value;
+    // Calculate deltaTime normalized to 60fps (16.67ms per frame)
+    // This ensures consistent animation speed regardless of device frame rate
+    // Use timeSincePreviousFrame if available, otherwise calculate manually
+    const frameDelta = frameInfo?.timeSincePreviousFrame ?? (currentTime - lastFrameTime.value);
+    
+    // Handle first frame or invalid deltas
+    if (frameDelta <= 0 || frameDelta > 1000) {
+      lastFrameTime.value = currentTime;
+      return; // Skip this frame
+    }
+    
+    const deltaTime = frameDelta / 16.67;
+    lastFrameTime.value = currentTime;
+
+    // Clamp deltaTime to prevent large jumps (e.g., when app resumes from background)
+    // Max 2.0 means we allow up to 2x normal frame time (30fps equivalent)
+    const clampedDelta = Math.min(deltaTime, 2.0);
+
+    // Update position based on current velocity (scaled by deltaTime for frame-rate independence)
+    // Velocity is in pixels per frame at 60fps, so we scale by deltaTime
+    translateX.value += velX.value * clampedDelta;
+    translateY.value += velY.value * clampedDelta;
 
     // Apply gravity (increases downward velocity) - realistic physics!
-    velY.value += config.gravity;
+    // Gravity is per frame at 60fps, so scale by deltaTime
+    velY.value += config.gravity * clampedDelta;
 
     // Apply drift (horizontal wind)
-    velX.value += config.drift;
+    velX.value += config.drift * clampedDelta;
 
-    // Apply decay (air resistance)
-    velX.value *= config.decay;
-    velY.value *= config.decay;
+    // Apply decay (air resistance) - decay per frame, so raise to power of deltaTime
+    velX.value *= Math.pow(config.decay, clampedDelta);
+    velY.value *= Math.pow(config.decay, clampedDelta);
 
     // Update rotation - ALL particles spin faster when moving fast, slower when slowing down
     const speed = Math.sqrt(velX.value * velX.value + velY.value * velY.value);
     const speedBoost = 1 + speed / 20;
-    rotation.value += particle.rotationVelocity * speedBoost;
+    rotation.value += particle.rotationVelocity * speedBoost * clampedDelta;
 
     // Canvas-confetti wobble effect (creates side-to-side flutter)
-    wobble.value += wobbleSpeed.value;
+    wobble.value += wobbleSpeed.value * clampedDelta;
 
     // Canvas-confetti tilt animation (creates 3D tumbling effect)
-    tiltAngle.value += 0.1;
+    tiltAngle.value += 0.1 * clampedDelta;
     tiltSin.value = Math.sin(tiltAngle.value);
     tiltCos.value = Math.cos(tiltAngle.value);
     random.value = Math.random() + 2;
 
-    // Update tick for progressive opacity fade
-    tick.value += 1;
+    // Update tick for progressive opacity fade (time-based, not frame-based)
+    // Use elapsed time instead of frame count for frame-rate independence
+    const progress = Math.min(1, elapsed / duration);
+    tick.value = progress * totalTicks.value;
 
     // Canvas-confetti progressive fade: opacity decreases linearly over lifetime
-    const progress = Math.min(1, tick.value / totalTicks.value);
     opacity.value = 1 - progress;
   });
 
