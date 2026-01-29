@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.7] - 2026-01-28
+
+### Changed
+- **Rotation speed adjustment**: Rotation now slows down more dramatically as particles fall
+- Increased speedBoost divisor from 20 to 35 for more pronounced speed-based rotation reduction
+- Particles rotate faster when moving fast and slow down rotation more as they decelerate
+
 ## [0.1.6] - 2026-01-28
 
 ### Fixed
@@ -105,6 +112,7 @@ All notable changes to this project will be documented in this file.
 - React Native Worklets ≥ 0.5.0
 - Expo SDK ≥ 50 (tested with SDK 54)
 
+[0.1.7]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.7
 [0.1.6]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.6
 [0.1.5]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.5
 [0.1.4]: https://github.com/andydev271/react-native-confetti-reanimated/releases/tag/v0.1.4

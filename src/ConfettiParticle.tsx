@@ -133,9 +133,11 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     velX.value *= Math.pow(config.decay, clampedDelta);
     velY.value *= Math.pow(config.decay, clampedDelta);
 
-    // Update rotation - ALL particles spin faster when moving fast, slower when slowing down
+    // Update rotation - particles spin faster when moving fast, slower when slowing down
+    // More pronounced slowdown: rotation reduces more dramatically as speed decreases
     const speed = Math.sqrt(velX.value * velX.value + velY.value * velY.value);
-    const speedBoost = 1 + speed / 20;
+    // Increased divisor from 20 to 35 makes rotation more tied to speed (slows down more as particles fall)
+    const speedBoost = 1 + speed / 35;
     rotation.value += particle.rotationVelocity * speedBoost * clampedDelta;
 
     // Canvas-confetti wobble effect (creates side-to-side flutter)
