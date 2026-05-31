@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -28,6 +28,9 @@ function opacityForProgress(progress: number, fadeStart: number): number {
 }
 
 export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, onComplete }) => {
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
+
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const velocity = useSharedValue(particle.velocity);
@@ -73,7 +76,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
 
     const timer = setTimeout(() => {
       isComplete.value = true;
-      onComplete?.();
+      onCompleteRef.current?.();
     }, duration);
 
     return () => {
@@ -82,26 +85,8 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
       cancelAnimation(translateY);
       cancelAnimation(opacity);
     };
-  }, [
-    config.fadeTicks,
-    config.tickDuration,
-    config.ticks,
-    duration,
-    onComplete,
-    isComplete,
-    opacity,
-    particle,
-    totalTicks,
-    fadeTicks,
-    translateX,
-    translateY,
-    tick,
-    velocity,
-    wobble,
-    wobbleSpeed,
-    tiltAngle,
-    random,
-  ]);
+    // Only re-init when this particle identity or lifetime changes — not when parent re-renders.
+  }, [particle.id, duration, config.ticks, config.tickDuration, config.fadeTicks]);
 
   useFrameCallback(() => {
     'worklet';

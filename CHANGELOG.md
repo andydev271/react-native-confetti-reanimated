@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.11] - 2026-05-31
+
+### Fixed
+- **Ghost bursts at end of animation**: `ConfettiParticle` no longer resets when the parent re-renders (e.g. per-particle cleanup). `onComplete` is held in a ref; init effect depends on `particle.id` and lifetime config only.
+
 ## [0.1.10] - 2026-05-31
 
 ### Fixed

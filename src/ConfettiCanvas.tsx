@@ -98,6 +98,9 @@ export const ConfettiCanvas = React.forwardRef<ConfettiMethods, ConfettiCanvasPr
 
     const handleParticleComplete = useCallback((particleId: string) => {
       setParticles(prev => {
+        if (!prev.some(p => p.id === particleId)) {
+          return prev;
+        }
         // Clean up completed particles periodically
         if (prev.length > 100) {
           return prev.filter(p => p.id !== particleId).slice(-50);
