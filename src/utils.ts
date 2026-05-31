@@ -1,3 +1,4 @@
+import { PixelRatio } from 'react-native';
 import type { ConfettiConfig, ConfettiParticle } from './types';
 
 export const DEFAULT_COLORS = [
@@ -34,11 +35,12 @@ export const DEFAULT_CONFIG: Required<ConfettiConfig> = {
   colors: DEFAULT_COLORS,
   scalar: 1,
   origin: { x: 0.5, y: 0.5 },
-  shapes: ['square'],
+  shapes: ['square', 'circle'],
   tilt: true,
   tiltAngleIncrement: 10,
-  tickDuration: 200,
-  ticks: 200,
+  tickDuration: 250,
+  ticks: 250,
+  fadeTicks: 60,
   disableForReducedMotion: false,
   usePerformanceMode: false,
 };
@@ -65,6 +67,20 @@ export const durationFromTicks = (ticks: number): number => {
 };
 
 /**
+ * Party-style strip size — canvas-confetti draws ~10–18px quads; RN uses logical px.
+ */
+export const particleDimensions = (scalar: number): { width: number; height: number } => {
+  const densityBoost = Math.min(PixelRatio.get(), 3) * 0.35 + 0.65;
+  const baseWidth = (10 + Math.random() * 8) * scalar * densityBoost;
+  const aspectRatio = 0.45 + Math.random() * 0.35;
+
+  return {
+    width: baseWidth,
+    height: baseWidth * aspectRatio,
+  };
+};
+
+/**
  * Create particles using canvas-confetti randomPhysics / updateFetti semantics.
  */
 export const createConfettiParticles = (
@@ -79,8 +95,7 @@ export const createConfettiParticles = (
   const timestamp = Date.now();
 
   for (let i = 0; i < config.particleCount; i++) {
-    const baseWidth = (6 + Math.random() * 4) * config.scalar;
-    const aspectRatio = 0.5 + Math.random() * 0.3;
+    const { width, height } = particleDimensions(config.scalar);
 
     particles.push({
       id: `confetti-${timestamp}-${i}-${Math.random()}`,
@@ -88,8 +103,8 @@ export const createConfettiParticles = (
       shape: randomFromArray(config.shapes),
       x: (config.origin.x ?? 0.5) * screenWidth,
       y: (config.origin.y ?? 0.5) * screenHeight,
-      width: baseWidth,
-      height: baseWidth * aspectRatio,
+      width,
+      height,
       angle2D: -radAngle + (0.5 * radSpread - Math.random() * radSpread),
       velocity: config.startVelocity * 0.5 + Math.random() * config.startVelocity,
       gravity: config.gravity * 3,

@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.9] - 2026-05-31
+
+### Fixed
+- **Larger party-style particles**: Increased strip dimensions with light density scaling; default shapes `square` + `circle`.
+- **Full-size rendering**: Removed transform `scaleX`/`scaleY` that shrank rectangles to tiny dots; use wobble rotation like canvas-confetti.
+- **Longer fall**: Default `ticks` 250 so pieces travel further before the animation ends.
+- **End fade**: New `fadeTicks` (default 60) — full opacity until the last ~1s, then fade out (matches “party” finish).
+
 ## [0.1.8] - 2026-05-30
 
 ### Fixed

@@ -96,9 +96,16 @@ export interface ConfettiConfig {
 
   /**
    * Total animation steps (one per frame, matching canvas-confetti)
-   * @default 200
+   * @default 250
    */
   ticks?: number;
+
+  /**
+   * Opacity fade window at end of life (in ticks, ~60 = 1s at 60fps).
+   * Full opacity until the last `fadeTicks` steps, then linear fade out.
+   * @default 60
+   */
+  fadeTicks?: number;
 
   /**
    * Disable physics

@@ -15,6 +15,18 @@ interface Props {
   onComplete?: () => void;
 }
 
+function opacityForProgress(progress: number, fadeStart: number): number {
+  'worklet';
+  if (progress <= fadeStart) {
+    return 1;
+  }
+  const fadeSpan = 1 - fadeStart;
+  if (fadeSpan <= 0) {
+    return 0;
+  }
+  return 1 - (progress - fadeStart) / fadeSpan;
+}
+
 export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, onComplete }) => {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -33,6 +45,12 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
   const totalTicks = useSharedValue(
     Math.max(1, Math.round(config.ticks ?? config.tickDuration ?? (duration / 1000) * 60)),
   );
+  const fadeTicks = useSharedValue(
+    Math.min(
+      Math.max(1, config.fadeTicks ?? 60),
+      Math.max(1, Math.round(config.ticks ?? config.tickDuration ?? (duration / 1000) * 60)),
+    ),
+  );
 
   useEffect(() => {
     tick.value = 0;
@@ -46,10 +64,12 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     tiltAngle.value = particle.tiltAngle;
     random.value = particle.random;
 
-    totalTicks.value = Math.max(
+    const ticks = Math.max(
       1,
       Math.round(config.ticks ?? config.tickDuration ?? (duration / 1000) * 60),
     );
+    totalTicks.value = ticks;
+    fadeTicks.value = Math.min(Math.max(1, config.fadeTicks ?? 60), ticks);
 
     const timer = setTimeout(() => {
       isComplete.value = true;
@@ -63,6 +83,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
       cancelAnimation(opacity);
     };
   }, [
+    config.fadeTicks,
     config.tickDuration,
     config.ticks,
     duration,
@@ -71,6 +92,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     opacity,
     particle,
     totalTicks,
+    fadeTicks,
     translateX,
     translateY,
     tick,
@@ -81,7 +103,6 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     random,
   ]);
 
-  // canvas-confetti: one physics step per animation frame (tick), not wall-clock integration
   useFrameCallback(() => {
     'worklet';
 
@@ -113,20 +134,17 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
       random.value = 1;
     }
 
-    // updateFetti — https://github.com/catdad/canvas-confetti
     translateX.value += Math.cos(particle.angle2D) * velocity.value + particle.drift;
     translateY.value += Math.sin(particle.angle2D) * velocity.value + particle.gravity;
     velocity.value *= particle.decay;
 
     tick.value += 1;
     const progress = tick.value / totalTicks.value;
-    opacity.value = 1 - progress;
+    const fadeStart = 1 - fadeTicks.value / totalTicks.value;
+    opacity.value = opacityForProgress(progress, fadeStart);
   });
 
   const animatedStyle = useAnimatedStyle(() => {
-    const x1 = translateX.value + random.value * tiltCos.value;
-    const y1 = translateY.value + random.value * tiltSin.value;
-
     const flat = particle.flat;
     const wobbleX = flat
       ? translateX.value + 10 * config.scalar
@@ -138,15 +156,11 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     const x2 = wobbleX + random.value * tiltCos.value;
     const y2 = wobbleY + random.value * tiltSin.value;
 
-    const scaleX = Math.abs(x2 - x1) * 0.1;
-    const scaleY = Math.abs(y2 - y1) * 0.1;
-
     return {
       transform: [
         { translateX: x2 },
         { translateY: y2 },
-        { scaleX: Math.max(0.3, scaleX) },
-        { scaleY: Math.max(0.3, scaleY) },
+        { rotate: `${(wobble.value * Math.PI) / 10}rad` },
       ],
       opacity: opacity.value,
     };
@@ -154,7 +168,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
 
   const renderShape = () => {
     if (particle.shape === 'circle') {
-      const size = particle.width;
+      const size = Math.max(particle.width, particle.height) * 1.1;
       return (
         <Animated.View
           style={[
@@ -172,7 +186,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     }
 
     if (particle.shape === 'star') {
-      const fontSize = particle.width * 1.5;
+      const fontSize = particle.width * 2;
       return (
         <Animated.Text
           style={[

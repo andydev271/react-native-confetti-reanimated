@@ -127,7 +127,8 @@ Returns `{ confettiRef, fire, reset }`.
 | `decay` | `0.9` | Velocity multiplier per tick |
 | `gravity` | `1` | Passed as `gravity * 3` per tick (canvas-confetti) |
 | `drift` | `0` | Horizontal drift per tick |
-| `ticks` | `200` | Animation steps (one per frame, like canvas-confetti) |
+| `ticks` | `250` | Animation steps (one per frame, like canvas-confetti) |
+| `fadeTicks` | `60` | Opacity fade only in the last N steps (~1s at 60fps) |
 | `duration` | derived | Cleanup timeout in ms; default `ticks / 60 * 1000` |
 | `colors` | built-in palette | Hex/rgb strings |
 | `scalar` | `1` | Particle size scale |
