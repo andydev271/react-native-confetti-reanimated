@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 import Animated, {
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   useFrameCallback,
@@ -15,21 +16,19 @@ interface Props {
   onComplete?: () => void;
 }
 
-function opacityForProgress(progress: number, fadeStart: number): number {
+/** canvas-confetti: `rgba(..., 1 - progress)` where progress = tick / totalTicks */
+function opacityForProgress(progress: number): number {
   'worklet';
-  if (progress <= fadeStart) {
-    return 1;
-  }
-  const fadeSpan = 1 - fadeStart;
-  if (fadeSpan <= 0) {
-    return 0;
-  }
-  return 1 - (progress - fadeStart) / fadeSpan;
+  return Math.max(0, 1 - progress);
 }
 
 export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, onComplete }) => {
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
+
+  const notifyComplete = useCallback(() => {
+    onCompleteRef.current?.();
+  }, []);
 
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -44,15 +43,10 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
   const random = useSharedValue(particle.random);
   const tick = useSharedValue(0);
   const isComplete = useSharedValue(false);
+  const hasNotifiedComplete = useSharedValue(false);
 
   const totalTicks = useSharedValue(
     Math.max(1, Math.round(config.ticks ?? config.tickDuration ?? (duration / 1000) * 60)),
-  );
-  const fadeTicks = useSharedValue(
-    Math.min(
-      Math.max(1, config.fadeTicks ?? 60),
-      Math.max(1, Math.round(config.ticks ?? config.tickDuration ?? (duration / 1000) * 60)),
-    ),
   );
 
   useEffect(() => {
@@ -62,6 +56,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     translateY.value = 0;
     opacity.value = 1;
     isComplete.value = false;
+    hasNotifiedComplete.value = false;
     wobble.value = particle.wobble;
     wobbleSpeed.value = particle.wobbleSpeed;
     tiltAngle.value = particle.tiltAngle;
@@ -72,31 +67,19 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
       Math.round(config.ticks ?? config.tickDuration ?? (duration / 1000) * 60),
     );
     totalTicks.value = ticks;
-    fadeTicks.value = Math.min(Math.max(1, config.fadeTicks ?? 60), ticks);
-
-    const timer = setTimeout(() => {
-      isComplete.value = true;
-      onCompleteRef.current?.();
-    }, duration);
 
     return () => {
-      clearTimeout(timer);
       cancelAnimation(translateX);
       cancelAnimation(translateY);
       cancelAnimation(opacity);
     };
     // Only re-init when this particle identity or lifetime changes — not when parent re-renders.
-  }, [particle.id, duration, config.ticks, config.tickDuration, config.fadeTicks]);
+  }, [particle.id, duration, config.ticks, config.tickDuration]);
 
   useFrameCallback(() => {
     'worklet';
 
     if (isComplete.value) {
-      return;
-    }
-
-    if (tick.value >= totalTicks.value) {
-      isComplete.value = true;
       return;
     }
 
@@ -124,9 +107,17 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
     velocity.value *= particle.decay;
 
     tick.value += 1;
-    const progress = tick.value / totalTicks.value;
-    const fadeStart = 1 - fadeTicks.value / totalTicks.value;
-    opacity.value = opacityForProgress(progress, fadeStart);
+    const progress = Math.min(1, tick.value / totalTicks.value);
+    opacity.value = opacityForProgress(progress);
+
+    if (tick.value >= totalTicks.value) {
+      isComplete.value = true;
+      opacity.value = 0;
+      if (!hasNotifiedComplete.value) {
+        hasNotifiedComplete.value = true;
+        runOnJS(notifyComplete)();
+      }
+    }
   });
 
   const animatedStyle = useAnimatedStyle(() => {

@@ -101,9 +101,7 @@ export interface ConfettiConfig {
   ticks?: number;
 
   /**
-   * Opacity fade window at end of life (in ticks, ~60 = 1s at 60fps).
-   * Full opacity until the last `fadeTicks` steps, then linear fade out.
-   * @default 60
+   * @deprecated Ignored — opacity follows canvas-confetti: `1 - (tick / ticks)` over the full lifetime.
    */
   fadeTicks?: number;
 

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.12] - 2026-05-31
+
+### Fixed
+- **canvas-confetti fade parity**: Opacity is `1 - (tick / ticks)` for the whole flight (same as web `rgba(..., 1 - progress)`), not a short end-only window.
+- **No sudden pop-off**: Particles unmount when tick count finishes (via frame callback), not on a wall-clock timeout that could remove them mid-fade on slower frame rates.
+
 ## [0.1.11] - 2026-05-31
 
 ### Fixed
