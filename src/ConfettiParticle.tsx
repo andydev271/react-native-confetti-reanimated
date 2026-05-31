@@ -153,14 +153,22 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
       ? translateY.value + 10 * config.scalar
       : translateY.value + 10 * config.scalar * Math.sin(wobble.value);
 
+    const x1 = translateX.value + random.value * tiltCos.value;
+    const y1 = translateY.value + random.value * tiltSin.value;
     const x2 = wobbleX + random.value * tiltCos.value;
     const y2 = wobbleY + random.value * tiltSin.value;
+
+    // canvas-confetti: path fill uses wobble/tilt span — keeps strips thin while tumbling
+    const scaleX = Math.max(0.25, Math.min(1.15, Math.abs(x2 - x1) * 0.1));
+    const scaleY = Math.max(0.25, Math.min(1.15, Math.abs(y2 - y1) * 0.1));
 
     return {
       transform: [
         { translateX: x2 },
         { translateY: y2 },
         { rotate: `${(wobble.value * Math.PI) / 10}rad` },
+        { scaleX },
+        { scaleY },
       ],
       opacity: opacity.value,
     };
@@ -168,7 +176,7 @@ export const ConfettiParticle: React.FC<Props> = ({ particle, config, duration, 
 
   const renderShape = () => {
     if (particle.shape === 'circle') {
-      const size = Math.max(particle.width, particle.height) * 1.1;
+      const size = particle.width;
       return (
         <Animated.View
           style={[

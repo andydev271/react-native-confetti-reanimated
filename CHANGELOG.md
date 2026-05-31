@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.10] - 2026-05-31
+
+### Fixed
+- Revert oversized “solid block” look: removed `PixelRatio` size boost; thin strips (width 6–10px, height ~30% of width).
+- Restore canvas-style dynamic `scaleX`/`scaleY` from wobble/tilt so rectangles read as tumbling paper, not flat chips.
+- Smaller circles (4–7px) instead of enlarged dots.
+
 ## [0.1.9] - 2026-05-31
 
 ### Fixed

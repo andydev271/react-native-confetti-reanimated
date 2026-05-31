@@ -1,4 +1,3 @@
-import { PixelRatio } from 'react-native';
 import type { ConfettiConfig, ConfettiParticle } from './types';
 
 export const DEFAULT_COLORS = [
@@ -67,17 +66,26 @@ export const durationFromTicks = (ticks: number): number => {
 };
 
 /**
- * Party-style strip size — canvas-confetti draws ~10–18px quads; RN uses logical px.
+ * Thin paper strips (canvas-confetti draws narrow quads, not filled blocks).
  */
-export const particleDimensions = (scalar: number): { width: number; height: number } => {
-  const densityBoost = Math.min(PixelRatio.get(), 3) * 0.35 + 0.65;
-  const baseWidth = (10 + Math.random() * 8) * scalar * densityBoost;
-  const aspectRatio = 0.45 + Math.random() * 0.35;
+export const particleDimensions = (
+  scalar: number,
+  shape: ConfettiParticle['shape'],
+): { width: number; height: number } => {
+  if (shape === 'circle') {
+    const size = (4 + Math.random() * 3) * scalar;
+    return { width: size, height: size };
+  }
 
-  return {
-    width: baseWidth,
-    height: baseWidth * aspectRatio,
-  };
+  if (shape === 'star') {
+    const size = (8 + Math.random() * 4) * scalar;
+    return { width: size, height: size };
+  }
+
+  const width = (6 + Math.random() * 4) * scalar;
+  const height = width * (0.28 + Math.random() * 0.22);
+
+  return { width, height };
 };
 
 /**
@@ -95,12 +103,13 @@ export const createConfettiParticles = (
   const timestamp = Date.now();
 
   for (let i = 0; i < config.particleCount; i++) {
-    const { width, height } = particleDimensions(config.scalar);
+    const shape = randomFromArray(config.shapes);
+    const { width, height } = particleDimensions(config.scalar, shape);
 
     particles.push({
       id: `confetti-${timestamp}-${i}-${Math.random()}`,
       color: randomFromArray(config.colors),
-      shape: randomFromArray(config.shapes),
+      shape,
       x: (config.origin.x ?? 0.5) * screenWidth,
       y: (config.origin.y ?? 0.5) * screenHeight,
       width,
