@@ -1,42 +1,34 @@
-# Release v0.1.3
+# Release v0.1.8
 
-## Quick Publish Steps
+## Publish steps
 
 ```bash
-# 1. Final build
-cd /var/www/github/react-native-confetti-reanimated
-npm run prepare
-
-# 2. Commit and tag
+cd /path/to/react-native-confetti-reanimated
+npm install
+npm run typescript
+npm run lint
+npm run prepare   # builds lib/ via react-native-builder-bob
 git add .
-git commit -m "Release v0.1.3: Fix TypeScript types and ESLint configuration"
-git tag -a v0.1.3 -m "v0.1.3"
-
-# 3. Push to GitHub
+git commit -m "Release v0.1.8: canvas-confetti tick physics parity"
+git tag -a v0.1.8 -m "v0.1.8"
 git push origin main
-git push origin v0.1.3
-
-# 4. Publish to npm
-npm login  # if needed
-npm publish
-
-# 5. Create GitHub Release
-# https://github.com/andydev271/react-native-confetti-reanimated/releases/new
-# Tag: v0.1.3
-# Copy description from CHANGELOG.md
+git push origin v0.1.8
+npm publish --access public
 ```
 
-## Verification
+Create a GitHub release from tag `v0.1.8` and paste the [0.1.8] section from `CHANGELOG.md`.
+
+## Verify
 
 ```bash
-# Check npm
-npm view react-native-confetti-reanimated
-
-# Test install
-mkdir /tmp/test && cd /tmp/test
-npm init -y
-npm install react-native-confetti-reanimated@0.1.3
+npm view react-native-confetti-reanimated version
+npm pack --dry-run
 ```
 
-Done! 🎉
+## Consumer upgrade
 
+```bash
+npx expo install react-native-confetti-reanimated@0.1.8
+```
+
+Use `ticks: 200` (default) and canvas-confetti-style options; avoid long `duration` with very slow custom gravity unless intentional.

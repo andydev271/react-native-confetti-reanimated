@@ -42,7 +42,8 @@ export interface ConfettiConfig {
   drift?: number;
 
   /**
-   * Time in milliseconds to run the confetti animation
+   * Cleanup timeout in ms; derived from `ticks` when omitted (ticks / 60 * 1000).
+   * Animation length is controlled by `ticks` (one step per frame, like canvas-confetti).
    * @default 3000
    */
   duration?: number;
@@ -94,8 +95,7 @@ export interface ConfettiConfig {
   tickDuration?: number;
 
   /**
-   * Total ticks (frames) for the confetti animation
-   * Overrides duration when provided (60fps assumed)
+   * Total animation steps (one per frame, matching canvas-confetti)
    * @default 200
    */
   ticks?: number;
@@ -121,13 +121,19 @@ export interface ConfettiParticle {
   y: number;
   width: number;
   height: number;
-  velocity: {
-    x: number;
-    y: number;
-  };
-  rotation: number;
-  rotationVelocity: number;
+  /** Launch angle in radians (canvas-confetti angle2D). */
+  angle2D: number;
+  /** Scalar speed; multiplied by decay each tick. */
+  velocity: number;
+  /** Per-tick downward pull (config.gravity * 3, same as canvas-confetti). */
+  gravity: number;
+  decay: number;
+  drift: number;
+  wobble: number;
+  wobbleSpeed: number;
   tiltAngle: number;
+  random: number;
+  flat: boolean;
   opacity: number;
 }
 

@@ -1,7 +1,7 @@
 import React, { useCallback, useImperativeHandle, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import type { ConfettiConfig, ConfettiMethods } from './types';
-import { createConfettiParticles, DEFAULT_CONFIG } from './utils';
+import { createConfettiParticles, DEFAULT_CONFIG, durationFromTicks } from './utils';
 import { ConfettiParticle } from './ConfettiParticle';
 import type { ConfettiParticle as ConfettiParticleType } from './types';
 
@@ -57,7 +57,7 @@ export const ConfettiCanvas = React.forwardRef<ConfettiMethods, ConfettiCanvasPr
           }
 
           if (config.duration === undefined && resolvedTicks !== undefined) {
-            mergedConfig.duration = Math.round((resolvedTicks / 60) * 1000);
+            mergedConfig.duration = durationFromTicks(resolvedTicks);
           } else if (config.ticks === undefined && config.tickDuration === undefined) {
             mergedConfig.ticks = Math.max(
               1,

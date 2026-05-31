@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.8] - 2026-05-30
+
+### Fixed
+- **canvas-confetti parity**: Physics now use the same tick-based `updateFetti` model as [canvas-confetti](https://github.com/catdad/canvas-confetti) (scalar velocity, `gravity * 3`, one step per frame).
+- Removed wall-clock delta integration that made animations feel too slow or inconsistent vs web.
+- Lifecycle is driven by `ticks` (default 200), not extended `duration` alone.
+
+### Changed
+- Particle model uses `angle2D`, scalar `velocity`, and per-particle `gravity`/`decay`/`drift` matching canvas-confetti.
+
 ## [0.1.7] - 2026-01-28
 
 ### Changed

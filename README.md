@@ -1,20 +1,18 @@
 # 🎉 react-native-confetti-reanimated
 
-A high-performance confetti component for React Native, powered by [Reanimated 4](https://docs.swmansion.com/react-native-reanimated/). Inspired by [canvas-confetti](https://github.com/catdad/canvas-confetti), fully compatible with Expo.
+A high-performance confetti component for React Native, powered by [Reanimated 4](https://docs.swmansion.com/react-native-reanimated/). Uses the same tick-based physics as [canvas-confetti](https://github.com/catdad/canvas-confetti). Works with Expo.
 
 [![npm version](https://img.shields.io/npm/v/react-native-confetti-reanimated.svg)](https://www.npmjs.com/package/react-native-confetti-reanimated)
 [![license](https://img.shields.io/npm/l/react-native-confetti-reanimated.svg)](https://github.com/andydev271/react-native-confetti-reanimated/blob/main/LICENSE)
 
 ## Features
 
-- 🚀 **High Performance** - Built with Reanimated 4 for smooth 60fps animations on UI thread
-- 📱 **Expo Compatible** - Works seamlessly with Expo managed workflow
-- 🎨 **Fully Customizable** - Control colors, shapes, physics, and more
-- 🎭 **Multiple Shapes** - Supports squares, circles, and stars
-- 🎯 **Preset Effects** - Ready-to-use effects like fireworks, stars, and realistic confetti
-- 🌈 **Canvas Confetti API** - Familiar API inspired by canvas-confetti
-- 📦 **TypeScript** - Full TypeScript support
-- 🔧 **Lightweight** - Minimal dependencies
+- 🚀 **UI-thread animation** — Reanimated 4 `useFrameCallback`
+- 📱 **Expo compatible** — SDK 50+ (tested with SDK 54)
+- 🎨 **canvas-confetti parity** — Same `updateFetti` model (scalar velocity, `gravity * 3`, tick lifecycle)
+- 🎭 **Shapes** — Squares, circles, stars
+- 🎯 **Presets** — Cannon, fireworks, stars, and more
+- 📦 **TypeScript** — Full types included
 
 ## Installation
 
@@ -22,7 +20,7 @@ A high-performance confetti component for React Native, powered by [Reanimated 4
 npm install react-native-confetti-reanimated react-native-reanimated
 ```
 
-Or with Expo:
+Expo:
 
 ```bash
 npx expo install react-native-confetti-reanimated react-native-reanimated
@@ -30,33 +28,16 @@ npx expo install react-native-confetti-reanimated react-native-reanimated
 
 ### Setup
 
-Add the Babel plugin to your `babel.config.js`:
+**Expo (SDK 50+):** Reanimated is included in `babel-preset-expo`. Restart the app after install.
 
-**For Expo projects (SDK 50+):**
-
-```javascript
-module.exports = function (api) {
-  api.cache(true);
-  return {
-    presets: ['babel-preset-expo'],
-    // Reanimated plugin is automatically included in Expo SDK 50+
-  };
-};
-```
-
-**For React Native CLI projects:**
+**React Native CLI:** Add to `babel.config.js` (worklets before reanimated):
 
 ```javascript
 module.exports = {
   presets: ['module:metro-react-native-babel-preset'],
-  plugins: [
-    'react-native-worklets/plugin',
-    'react-native-reanimated/plugin',
-  ],
+  plugins: ['react-native-worklets/plugin', 'react-native-reanimated/plugin'],
 };
 ```
-
-> ⚠️ **Important**: For Expo, plugins are auto-included. For React Native CLI, add both plugins (worklets before reanimated). Restart your app after changes.
 
 ## Quick Start
 
@@ -70,8 +51,8 @@ export default function App() {
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Button title="🎉 Celebrate!" onPress={() => fire()} />
-      <ConfettiCanvas ref={confettiRef} />
+      <Button title="Celebrate!" onPress={() => fire()} />
+      <ConfettiCanvas ref={confettiRef} fullScreen zIndex={9999} />
     </View>
   );
 }
@@ -79,28 +60,29 @@ export default function App() {
 
 ## Usage Examples
 
-### Using Presets
+### Presets
 
 ```tsx
 import { presets } from 'react-native-confetti-reanimated';
 
-// Basic cannon burst
 fire(presets.basicCannon);
-
-// Random direction (different each time)
-fire(presets.randomDirection);
-
-// Realistic confetti (mixed bursts)
-fire(presets.realistic);
-
-// Fireworks effect (continuous from sides)
 fire(presets.fireworks);
-
-// Stars burst
 fire(presets.stars);
 ```
 
-### Custom Configuration
+### Match web `canvas-confetti` defaults
+
+```tsx
+fire({
+  particleCount: 100,
+  spread: 70,
+  origin: { x: 0.5, y: 0.8 },
+  colors: ['#FFD700', '#FFA500', '#FF6347', '#4169E1', '#32CD32'],
+  // ticks: 200 is the default (same as canvas-confetti)
+});
+```
+
+### Custom burst
 
 ```tsx
 fire({
@@ -112,90 +94,71 @@ fire({
   startVelocity: 45,
   gravity: 1,
   decay: 0.9,
+  ticks: 200,
 });
-```
-
-### Directional Effects
-
-```tsx
-// Left cannon
-fire(presets.leftCannon);
-
-// Right cannon
-fire(presets.rightCannon);
-
-// Bottom cannon (shoot upward)
-fire(presets.bottomCannon);
 ```
 
 ## API Reference
 
 ### `ConfettiCanvas`
 
-Main component that renders confetti particles.
-
-**Props:**
-
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `containerStyle` | `StyleProp<ViewStyle>` | `undefined` | Custom style for container |
-| `zIndex` | `number` | `1000` | Z-index of confetti layer |
-| `fullScreen` | `boolean` | `true` | Whether to cover full screen |
+| `containerStyle` | `StyleProp<ViewStyle>` | — | Container style |
+| `zIndex` | `number` | `1000` | Layer z-index |
+| `fullScreen` | `boolean` | `true` | Cover the screen |
 
 ### `useConfetti()`
 
-Hook for controlling confetti.
+Returns `{ confettiRef, fire, reset }`.
 
-**Returns:**
-- `confettiRef` - Ref to pass to ConfettiCanvas
-- `fire(config?)` - Function to trigger confetti
-- `reset()` - Clear all confetti
+- Pass `confettiRef` to `ConfettiCanvas`.
+- `fire(config?)` launches a burst (returns a `Promise` resolved after cleanup timeout).
+- `reset()` clears all particles.
 
-### Configuration Options
+### `ConfettiConfig`
 
-```typescript
-interface ConfettiConfig {
-  particleCount?: number;      // Default: 50
-  angle?: number;              // Default: 90 (degrees)
-  spread?: number;             // Default: 45 (degrees)
-  startVelocity?: number;      // Default: 45
-  decay?: number;              // Default: 0.9
-  gravity?: number;            // Default: 1
-  drift?: number;              // Default: 0
-  duration?: number;           // Default: 3000 (ms)
-  ticks?: number;              // Default: 200 (frames @ 60fps)
-  colors?: string[];           // Default: vibrant colors
-  scalar?: number;             // Default: 1
-  origin?: { x?: number; y?: number }; // Default: { x: 0.5, y: 0.5 }
-  shapes?: Array<'square' | 'circle' | 'star'>; // Default: ['square']
-  tilt?: boolean;              // Default: true
-  tiltAngleIncrement?: number; // Default: 10
-}
+| Option | Default | Description |
+|--------|---------|-------------|
+| `particleCount` | `50` | Number of pieces |
+| `angle` | `90` | Launch angle (degrees) |
+| `spread` | `45` | Spread (degrees) |
+| `startVelocity` | `45` | Initial speed |
+| `decay` | `0.9` | Velocity multiplier per tick |
+| `gravity` | `1` | Passed as `gravity * 3` per tick (canvas-confetti) |
+| `drift` | `0` | Horizontal drift per tick |
+| `ticks` | `200` | Animation steps (one per frame, like canvas-confetti) |
+| `duration` | derived | Cleanup timeout in ms; default `ticks / 60 * 1000` |
+| `colors` | built-in palette | Hex/rgb strings |
+| `scalar` | `1` | Particle size scale |
+| `origin` | `{ x: 0.5, y: 0.5 }` | Normalized 0–1 position |
+| `shapes` | `['square']` | `'square' \| 'circle' \| 'star'` |
+| `tilt` | `true` | 3D tilt / wobble (set `false` for flat mode) |
+
+### Physics model (v0.1.8+)
+
+Animation length is controlled by **`ticks`** (default **200**), with **one physics step per frame** — the same model as canvas-confetti:
+
+- `x += cos(angle2D) * velocity + drift`
+- `y += sin(angle2D) * velocity + (gravity * 3)`
+- `velocity *= decay`
+- Opacity fades with `tick / totalTicks`
+
+Prefer **`ticks`** over very large `duration` values. Low `gravity` / `startVelocity` on the app side will look slower than web even when the library is correct.
+
+### Presets
+
+`presets.basicCannon`, `randomDirection`, `realistic`, `fireworks`, `stars`, `leftCannon`, `rightCannon`, `bottomCannon`
+
+### Utilities
+
+```ts
+import { durationFromTicks, DEFAULT_CONFIG } from 'react-native-confetti-reanimated';
+
+durationFromTicks(200); // 3333 ms cleanup timeout
 ```
 
-> `ticks` (frames) overrides `duration` when provided (60fps assumed).
-
-### Available Presets
-
-```typescript
-presets.basicCannon      // 🎊 Basic celebration burst
-presets.randomDirection  // 🎲 Random direction & amount
-presets.realistic        // ✨ Realistic confetti (mixed bursts)
-presets.fireworks        // 🎆 Continuous fireworks from sides
-presets.stars            // ⭐ Golden star burst
-presets.leftCannon       // ⬅️ Left side cannon
-presets.rightCannon      // ➡️ Right side cannon
-presets.bottomCannon     // ⬆️ Bottom cannon
-```
-
-## Example App
-
-Check out the `example` directory for a complete demo app with all features:
-- 🎊 Basic Cannon
-- 🎲 Random Direction  
-- ✨ Realistic Look
-- 🎆 Fireworks
-- ⭐ Stars
+## Example app
 
 ```bash
 cd example
@@ -203,48 +166,38 @@ npm install
 npm start
 ```
 
-Then use Expo Go to scan the QR code or press `i` for iOS / `a` for Android.
+## Platform support
 
-## Platform Support
-
-- ✅ iOS
-- ✅ Android  
-- ✅ Expo (SDK 50+, tested with SDK 54)
+- iOS
+- Android
+- Expo (SDK 50+)
 
 ## Requirements
 
-- React ≥ 18.0.0 (tested with React 19)
-- React Native ≥ 0.74 (New Architecture/Fabric required)
-- React Native Reanimated ≥ 4.0.0
-- Expo SDK ≥ 50 (tested with SDK 54)
-
-> **Note**: Reanimated 4 requires React Native's New Architecture (Fabric). Expo SDK 50+ has this enabled by default.
+- React ≥ 18
+- React Native ≥ 0.74 (New Architecture / Fabric)
+- React Native Reanimated ≥ 4
 
 ## Troubleshooting
 
-### Confetti not appearing?
+**Confetti not showing**
 
-1. Ensure `ConfettiCanvas` is in your component tree
-2. Verify Babel plugin is configured (`react-native-worklets/plugin`)
-3. Restart your app completely after Babel changes
-4. Clear Metro cache: `npx react-native start --reset-cache`
-5. Make sure you're using React Native New Architecture (Fabric)
+1. `ConfettiCanvas` must be mounted (e.g. global provider + `zIndex`).
+2. Restart Metro after Babel changes: `npx expo start --clear`.
+3. Confirm Reanimated 4 + Fabric are enabled.
 
-### Performance issues?
+**Looks slower or faster than web**
 
-- Reduce `particleCount` (recommended: 50-100)
-- Shorten `duration` (recommended: 2-3 seconds)
-- Ensure you're using the latest version of Reanimated
+- Use the same `particleCount`, `spread`, `startVelocity`, `gravity`, `decay`, and `ticks` as canvas-confetti (defaults are aligned in v0.1.8).
+- Tick-based animation completes in `ticks / refreshRate` seconds (e.g. 200 frames ≈ 3.3s at 60Hz, ≈ 1.7s at 120Hz), same as web in the browser.
 
-### TypeScript errors?
+**Performance**
 
-```bash
-npm install --save-dev @types/react @types/react-native
-```
+- Keep `particleCount` around 50–120 for mobile.
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## License
 
@@ -252,16 +205,5 @@ MIT © [Andy A](https://github.com/andydev271)
 
 ## Credits
 
-- Inspired by [canvas-confetti](https://github.com/catdad/canvas-confetti) by @catdad
-- Built with [react-native-reanimated](https://github.com/software-mansion/react-native-reanimated) v4
-- Uses [react-native-worklets](https://github.com/software-mansion/react-native-worklets)
-
-## Links
-
-- 📦 [npm](https://www.npmjs.com/package/react-native-confetti-reanimated)
-- 🐛 [Issues](https://github.com/andydev271/react-native-confetti-reanimated/issues)
-- 💬 [Discussions](https://github.com/andydev271/react-native-confetti-reanimated/discussions)
-
----
-
-Made with ❤️ and confetti
+- [canvas-confetti](https://github.com/catdad/canvas-confetti) by @catdad
+- [react-native-reanimated](https://github.com/software-mansion/react-native-reanimated)

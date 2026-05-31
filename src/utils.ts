@@ -1,30 +1,25 @@
 import type { ConfettiConfig, ConfettiParticle } from './types';
 
-// Canvas-confetti uses highly contrasting, distinct colors for realistic effect
-// Each color is maximally different from others for clear visibility
 export const DEFAULT_COLORS = [
-  // Primary vibrant colors (maximally distinct)
-  '#26ccff', // Bright Cyan
-  '#a25afd', // Purple
-  '#ff5e7e', // Pink
-  '#88ff5a', // Lime Green
-  '#fcff42', // Yellow
-  '#ffa62d', // Orange
-  '#ff36ff', // Magenta
-  // Secondary distinct colors
-  '#1e90ff', // Dodger Blue
-  '#9400d3', // Dark Violet
-  '#ff1493', // Deep Pink
-  '#32cd32', // Lime
-  '#ffd700', // Gold
-  '#ff6347', // Tomato
-  '#00ffff', // Cyan
-  '#ff00ff', // Fuchsia
-  // Additional contrast colors
-  '#00ff00', // Pure Green
-  '#ff0000', // Pure Red
-  '#0000ff', // Pure Blue
-  '#ffff00', // Pure Yellow
+  '#26ccff',
+  '#a25afd',
+  '#ff5e7e',
+  '#88ff5a',
+  '#fcff42',
+  '#ffa62d',
+  '#ff36ff',
+  '#1e90ff',
+  '#9400d3',
+  '#ff1493',
+  '#32cd32',
+  '#ffd700',
+  '#ff6347',
+  '#00ffff',
+  '#ff00ff',
+  '#00ff00',
+  '#ff0000',
+  '#0000ff',
+  '#ffff00',
 ];
 
 export const DEFAULT_CONFIG: Required<ConfettiConfig> = {
@@ -39,7 +34,7 @@ export const DEFAULT_CONFIG: Required<ConfettiConfig> = {
   colors: DEFAULT_COLORS,
   scalar: 1,
   origin: { x: 0.5, y: 0.5 },
-  shapes: ['square'], // Rectangular strips are most realistic
+  shapes: ['square'],
   tilt: true,
   tiltAngleIncrement: 10,
   tickDuration: 200,
@@ -48,23 +43,14 @@ export const DEFAULT_CONFIG: Required<ConfettiConfig> = {
   usePerformanceMode: false,
 };
 
-/**
- * Convert degrees to radians
- */
 export const degreesToRadians = (degrees: number): number => {
   return (degrees * Math.PI) / 180;
 };
 
-/**
- * Generate a random number between min and max
- */
 export const randomRange = (min: number, max: number): number => {
   return Math.random() * (max - min) + min;
 };
 
-/**
- * Pick a random item from an array
- */
 export const randomFromArray = <T>(arr: T[]): T => {
   const item = arr[Math.floor(Math.random() * arr.length)];
   if (item === undefined) {
@@ -73,8 +59,13 @@ export const randomFromArray = <T>(arr: T[]): T => {
   return item;
 };
 
+/** Wall-clock cleanup timeout derived from tick count at 60fps (canvas-confetti default). */
+export const durationFromTicks = (ticks: number): number => {
+  return Math.round((ticks / 60) * 1000);
+};
+
 /**
- * Create initial confetti particles
+ * Create particles using canvas-confetti randomPhysics / updateFetti semantics.
  */
 export const createConfettiParticles = (
   config: Required<ConfettiConfig>,
@@ -82,79 +73,36 @@ export const createConfettiParticles = (
   screenHeight: number,
 ): ConfettiParticle[] => {
   const particles: ConfettiParticle[] = [];
-  const angleInRadians = degreesToRadians(config.angle);
-  const spreadInRadians = degreesToRadians(config.spread);
-
+  const radAngle = degreesToRadians(config.angle);
+  const radSpread = degreesToRadians(config.spread);
+  const flat = !config.tilt;
   const timestamp = Date.now();
+
   for (let i = 0; i < config.particleCount; i++) {
-    // Add spread variation to the angle
-    const spreadVariation = randomRange(-spreadInRadians / 2, spreadInRadians / 2);
-    const particleAngle = angleInRadians + spreadVariation;
-    // Randomize velocity within range
-    const velocityMagnitude = config.startVelocity * (0.5 + Math.random() * 0.5);
-    // Create confetti particles - broader and shorter like canvas-confetti
-    const baseWidth = (6 + Math.random() * 4) * config.scalar; // 6-10px wide (BROADER)
-    const aspectRatio = 0.5 + Math.random() * 0.3; // 0.5-0.8 ratio (SHORTER than wide)
-    const particle: ConfettiParticle = {
+    const baseWidth = (6 + Math.random() * 4) * config.scalar;
+    const aspectRatio = 0.5 + Math.random() * 0.3;
+
+    particles.push({
       id: `confetti-${timestamp}-${i}-${Math.random()}`,
       color: randomFromArray(config.colors),
       shape: randomFromArray(config.shapes),
       x: (config.origin.x ?? 0.5) * screenWidth,
       y: (config.origin.y ?? 0.5) * screenHeight,
       width: baseWidth,
-      height: baseWidth * aspectRatio, // Height is SMALLER than width
-      velocity: {
-        // Canvas-confetti uses pixels per frame (60fps)
-        // Use velocity as-is for proper scaling to device
-        x: Math.cos(particleAngle) * velocityMagnitude,
-        y: -Math.sin(particleAngle) * velocityMagnitude, // Negative = upward initially
-      },
-      rotation: Math.random() * 360,
-      rotationVelocity: randomRange(-50, 50), // Very wide range for dramatic spinning
-      tiltAngle: config.tilt ? Math.random() * config.tiltAngleIncrement : 0,
+      height: baseWidth * aspectRatio,
+      angle2D: -radAngle + (0.5 * radSpread - Math.random() * radSpread),
+      velocity: config.startVelocity * 0.5 + Math.random() * config.startVelocity,
+      gravity: config.gravity * 3,
+      decay: config.decay,
+      drift: config.drift,
+      wobble: Math.random() * 10,
+      wobbleSpeed: Math.min(0.11, Math.random() * 0.1 + 0.05),
+      tiltAngle: flat ? 0 : (Math.random() * 0.5 + 0.25) * Math.PI,
+      random: Math.random() + 2,
+      flat,
       opacity: 1,
-    };
-
-    particles.push(particle);
+    });
   }
 
   return particles;
-};
-
-/**
- * Update a confetti particle's position
- */
-export const updateParticle = (
-  particle: ConfettiParticle,
-  config: Required<ConfettiConfig>,
-  deltaTime: number,
-): ConfettiParticle => {
-  const dt = deltaTime / 16; // Normalize to 60fps
-
-  // Apply gravity
-  const newVelocityY = particle.velocity.y - config.gravity * dt;
-  // Apply drift
-  const newVelocityX = particle.velocity.x + config.drift * dt;
-
-  // Update position
-  const newX = particle.x + newVelocityX * dt;
-  const newY = particle.y - newVelocityY * dt;
-
-  // Update rotation
-  const newRotation = particle.rotation + particle.rotationVelocity * dt;
-
-  // Apply decay to opacity
-  const newOpacity = particle.opacity * Math.pow(config.decay, dt);
-
-  return {
-    ...particle,
-    x: newX,
-    y: newY,
-    velocity: {
-      x: newVelocityX,
-      y: newVelocityY,
-    },
-    rotation: newRotation,
-    opacity: newOpacity,
-  };
 };
